@@ -26,5 +26,6 @@ class Routes {
     router.define(daily, handler: dailyHandler);
     router.define(rankList, handler: rankListHandler);
     router.define(playList, handler: playListHandler);
+    router.define(mine, handler: mineHandler);
   }
 }

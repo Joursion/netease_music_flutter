@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_netease_cloud_music/pages/daily/daily_page.dart';
 import 'package:flutter_netease_cloud_music/pages/home/home_page.dart';
+import 'package:flutter_netease_cloud_music/pages/mine/mine_page.dart';
 import 'package:flutter_netease_cloud_music/pages/my_music/my_music_page.dart';
 import 'package:flutter_netease_cloud_music/provider/app.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +20,7 @@ class _IndexPageState extends State<IndexPage> {
     HomePage(),
     MyMusicPage(),
     DailyPage(),
+    MinePage()
   ];
 
   final List<BottomNavigationBarItem> bottomTabs = [
@@ -66,7 +68,9 @@ class _IndexPageState extends State<IndexPage> {
             model.changeTabIndex(index);
           },
         ),
-        body: tabBodies[model.currentTabIndex],
+        body: SafeArea(
+          child: tabBodies[model.currentTabIndex],
+        )
       );
     });
   }

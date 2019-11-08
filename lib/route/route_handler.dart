@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_netease_cloud_music/pages/daily/daily_page.dart';
 import 'package:flutter_netease_cloud_music/pages/home/home_page.dart';
 import 'package:flutter_netease_cloud_music/pages/login/login_page.dart';
+import 'package:flutter_netease_cloud_music/pages/mine/mine_page.dart';
 import 'package:flutter_netease_cloud_music/pages/play_list/play_list.dart';
 import 'package:flutter_netease_cloud_music/pages/rank/rank_page.dart';
 
@@ -35,5 +36,12 @@ var playListHandler = new Handler(
     return PlayListPage();
   }
 );
+
+var mineHandler = new Handler(
+  handlerFunc: (BuildContext context, Map<String, List<Object>> params) {
+    return MinePage();
+  }
+);
+
 
 

@@ -1,3 +1,18 @@
+### 介绍
+
+一直想接触一下 `Flutter` ，用 `Flutter` 写一个网易云，直到看到了掘金上的文章，就开始跟(抄)着学习了一下。
+
+有些 `Copy` ，也有些自己学着模仿
+
+学习的掘金地址 : [Flutter实战 | 从 0 搭建「网易云音乐」APP](https://juejin.im/post/5d9de9a2e51d4578282ce25a)
+
+学习的 `GitHub` 地址 : [NeteaseClouldMusic](https://github.com/wanglu1209/NeteaseClouldMusic)
+
+另外参考的有：
+1.  [Flutter 实战](https://book.flutterchina.club/) 作者杜文（网名wendux）
+2.  [Flutter实战视频-移动电商](https://jspang.com/posts/2019/03/01/flutter-shop.html) 技术胖
+
+
 ### 使用 json_serializable 
 
 1. 在 `pubspec.yaml` 中配置

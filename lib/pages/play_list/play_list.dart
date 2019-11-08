@@ -1,7 +1,10 @@
 /**
  * 歌单详情页
  */
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_netease_cloud_music/pages/play_list/widget/play.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class PlayListPage extends StatefulWidget {
@@ -10,7 +13,9 @@ class PlayListPage extends StatefulWidget {
 }
 
 class _PlayListPageState extends State<PlayListPage> {
-  ScrollController _controller = new ScrollController();
+  final _controller = new PageController();
+
+  static const _kCurve = Curves.ease;
 
   void startAnimation(ScrollMetrics metrics) {
     // 只监听水平滚动
@@ -23,7 +28,7 @@ class _PlayListPageState extends State<PlayListPage> {
     var offset = pixels % viewportDimension;
     // 滚动超过一半
     if (offset > (pixels / 2)) {
-
+      print('超过一半');
     }
   }
 
@@ -34,38 +39,26 @@ class _PlayListPageState extends State<PlayListPage> {
       Container(
         width: width,
         height: double.infinity,
-        color: Colors.green,
-      ),
-      Container(
-        width: width,
-        height: double.infinity,
         color: Colors.blue,
       ),
+      PlayWidget(),
       Container(
         width: width,
         height: double.infinity,
         color: Colors.red,
       )
     ];
-    return Container(
-        child: NotificationListener<ScrollNotification> (
-          onNotification: (ScrollNotification notification) {
-            ScrollMetrics metrics = notification.metrics;
-            print('当前位置: ${metrics.pixels}');// 当前位置
-            print(metrics.atEdge);//是否在顶部或底部
-            print(metrics.axis);//垂直或水平滚动
-            print(metrics.axisDirection);// 滚动方向是down还是up
-            print(metrics.extentAfter);//视口底部距离列表底部有多大
-            print(metrics.extentBefore);//视口顶部距离列表顶部有多大
-            print(metrics.extentInside);//视口范围内的列表长度
-            print('max:  ${metrics.maxScrollExtent}');//最大滚动距离，列表长度-视口长度
-            print(metrics.minScrollExtent);//最小滚动距离
-            print(metrics.viewportDimension);//视口长度
-            print(metrics.outOfRange);//是否越过边界
-          },
-          child: Stack(
-          children: <Widget>[
-            ListView.builder(
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Container(
+        color: Colors.white,
+        child: SafeArea(
+          top: true,
+          bottom: false,
+          child: Stack(children: <Widget>[
+            PageView.builder(
+              reverse: false,
               controller: _controller,
               scrollDirection: Axis.horizontal,
               itemCount: ta.length,
@@ -77,20 +70,210 @@ class _PlayListPageState extends State<PlayListPage> {
               bottom: 0,
               left: 0,
               right: 0,
+              child: PlayController(controller: _controller),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
               child: Container(
-                height: 300,
                 color: Colors.white,
-                child: Row(
-                  children: <Widget>[
-                    Text('上一首'),
-                    Text('暂停'),
-                    Text('下一首'),
-                  ],
+                padding: EdgeInsets.all(20),
+                child: new Dots(
+                  controller: _controller,
+                  itemCount: ta.length,
+                  maxZoom: 1.5,
+                  onPageSelected: (int page) {
+                    _controller.animateToPage(page,
+                        duration: Duration(milliseconds: 100), curve: _kCurve);
+                  },
                 ),
               ),
             )
-          ],
-        ))
-     );
+          ]),
+        ),
+      ),
+    );
   }
+}
+
+class Dots extends AnimatedWidget {
+  final PageController controller;
+  final int itemCount;
+  final Color color;
+  final ValueChanged<int> onPageSelected;
+  final double dotSize;
+  final double maxZoom;
+  final double dotSpacing;
+
+  Dots(
+      {this.controller,
+      this.itemCount,
+      this.color: Colors.grey,
+      this.onPageSelected,
+      this.dotSize = 8.0,
+      this.dotSpacing = 25.0,
+      this.maxZoom = 2.0})
+      : super(listenable: controller);
+
+  Widget _buildDot(int index) {
+    double selectedness = Curves.easeOut.transform(
+      max(0.0,
+          1.0 - ((controller.page ?? controller.initialPage) - index).abs()),
+    );
+
+    double zoom = 1.0 + (maxZoom - 1.0) * selectedness;
+    // print(
+    //     'buildDot, selectedness:  ${selectedness}, zoom: ${zoom}, index: ${index}');
+
+    return Container(
+      width: dotSpacing,
+      child: Center(
+        child: Material(
+          color: color,
+          type: MaterialType.circle,
+          child: Container(
+            width: dotSize * zoom,
+            height: dotSize * zoom,
+            child: InkWell(
+              onTap: () => onPageSelected(index),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List<Widget>.generate(itemCount, _buildDot),
+    );
+  }
+}
+
+class PlayController extends AnimatedWidget {
+  final PageController controller;
+  // 两层的控制高度
+  static double defaultControllerHeight = 140.0;
+  static double defaultOtherControllerHeight = 100.0;
+
+  PlayController({this.controller}) : super(listenable: controller);
+
+  @override
+  Widget build(BuildContext context) {
+    var currentPage = controller.page;
+    if (currentPage > 1) {
+      currentPage = 2 - currentPage;
+    }
+
+    double zoom = Curves.easeOut.transform(currentPage);
+
+    // 播放菜单的高度
+    var height = defaultControllerHeight * zoom;
+    // 其他按钮的高度
+    var otherControllerHeight = defaultOtherControllerHeight * zoom;
+
+    if (controller.page < 1) {
+      if (height < defaultControllerHeight) {
+        height = defaultControllerHeight;
+      }
+    }
+
+    if (currentPage == null) {
+      height = 0;
+    }
+
+    print('PlayController... zoom: ${zoom}, currentPage: ${currentPage}');
+    print('height ${height}, otherControllerHeight: ${otherControllerHeight}');
+
+    return Container(
+      height: height + otherControllerHeight,
+      color: Colors.white,
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: height,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: <Widget>[
+                GestureDetector(
+                  child: Icon(
+                    Icons.favorite_border,
+                    size: 30,
+                  ),
+                ),
+                GestureDetector(
+                  child: Icon(
+                    Icons.skip_previous,
+                    size: 80,
+                  ),
+                  onTap: () {},
+                ),
+                GestureDetector(
+                  child: Icon(
+                    Icons.play_arrow,
+                    size: 100,
+                  ),
+                  onTap: () {},
+                ),
+                GestureDetector(
+                  child: Icon(
+                    Icons.skip_next,
+                    size: 80,
+                  ),
+                  onTap: () {},
+                ),
+                GestureDetector(
+                  child: Icon(
+                    Icons.share,
+                    size: 30,
+                  ),
+                )
+              ],
+            ),
+          ),
+          Container(
+            height: otherControllerHeight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: <Widget>[
+                GestureDetector(
+                  child: Icon(
+                    Icons.file_download,
+                    size: 40,
+                  ),
+                ),
+                GestureDetector(
+                  child: Icon(
+                    Icons.insert_comment,
+                    size: 40,
+                  ),
+                  onTap: () {},
+                ),
+                GestureDetector(
+                  child: Icon(
+                    Icons.menu,
+                    size: 40,
+                  ),
+                  onTap: () {},
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class PlayOtherController extends AnimatedWidget {
+  final PageController controller;
+
+  PlayOtherController({this.controller}) : super(listenable: controller);
+
+  @override
+  Widget build(BuildContext context) {}
 }

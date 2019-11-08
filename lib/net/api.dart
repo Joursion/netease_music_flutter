@@ -5,10 +5,13 @@ import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_netease_cloud_music/net/response/album.dart';
 import 'package:flutter_netease_cloud_music/net/response/banner.dart';
+import 'package:flutter_netease_cloud_music/net/response/comment.dart';
 import 'package:flutter_netease_cloud_music/net/response/daily.dart';
 import 'package:flutter_netease_cloud_music/net/response/login.dart';
+import 'package:flutter_netease_cloud_music/net/response/lyric.dart';
 import 'package:flutter_netease_cloud_music/net/response/rank.dart';
 import 'package:flutter_netease_cloud_music/net/response/recommend.dart';
+import 'package:flutter_netease_cloud_music/net/response/song.dart';
 import 'package:flutter_netease_cloud_music/utils/db.dart';
 import 'package:flutter_netease_cloud_music/utils/navigator.dart';
 import 'package:flutter_netease_cloud_music/utils/utils.dart';
@@ -118,11 +121,36 @@ class API {
     return LoginResponse.fromJson(response.data);
   }
 
+  // 排行榜
   static Future<RankResponse> getRank (BuildContext context) async {
     var response = await _get(context, '/toplist/detail');
     print('getRank....');
     return RankResponse.fromJson(response.data);
   }
 
+  // 歌曲详情
+  static Future<SongResponse> getSong (BuildContext context, {Map<String, dynamic> params}) async {
+    var response = await _get(context, '/song/detail', params: params);
+    return SongResponse.fromJson(response.data);
+  }
+
+  // 评论列表
+  static Future<CommentResponse> getComment (BuildContext context, {Map<String, dynamic> params}) async {
+    var response = await _get(context, '/comment/music', params: params);
+    return CommentResponse.fromJson(response.data);
+  }
+
+  // 歌词
+  static Future<LyricResponse> getLyric (BuildContext context, {@required Map<String, dynamic> params}) async {
+    var response = await _get(context, '/lyric', params: params);
+    return LyricResponse.fromJson(response.data);
+  }
+
+  // 个人歌单
+
+  // 创建歌单
+
+  // 歌单详情
+  
   // static Future<T> request(String path, )
 }
